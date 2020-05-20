@@ -1,7 +1,8 @@
 const { ApolloServer } = require("apollo-server");
 const { ApolloGateway } = require("@apollo/gateway");
+const { NodeGateway } = require('./node/NodeGateway');
 
-const gateway = new ApolloGateway({
+const gateway = new NodeGateway({
   // This entire `serviceList` is optional when running in managed federation
   // mode, using Apollo Graph Manager as the source of truth.  In production,
   // using a single source of truth to compose a schema is recommended and

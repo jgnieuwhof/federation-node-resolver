@@ -2,11 +2,17 @@ const { ApolloServer, gql } = require("apollo-server");
 const { buildFederatedSchema } = require("@apollo/federation");
 
 const typeDefs = gql`
-  extend type Query {
-    topProducts(first: Int = 5): [Product]
+  interface Node {
+    id: ID!
   }
 
-  type Product @key(fields: "upc") {
+  type Query {
+    topProducts(first: Int = 5): [Product]
+    node(id: ID!): Node
+  }
+
+  type Product implements Node @key(fields: "upc id") {
+    id: ID!
     upc: String!
     name: String
     price: Int
@@ -17,7 +23,7 @@ const typeDefs = gql`
 const resolvers = {
   Product: {
     __resolveReference(object) {
-      return products.find(product => product.upc === object.upc);
+      return products.find(product => product.upc === object.upc || product.id === object.id);
     }
   },
   Query: {
@@ -42,18 +48,21 @@ server.listen({ port: 4003 }).then(({ url }) => {
 
 const products = [
   {
+    id: "Product:1",
     upc: "1",
     name: "Table",
     price: 899,
     weight: 100
   },
   {
+    id: "Product:1",
     upc: "2",
     name: "Couch",
     price: 1299,
     weight: 1000
   },
   {
+    id: "Product:1",
     upc: "3",
     name: "Chair",
     price: 54,

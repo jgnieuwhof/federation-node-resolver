@@ -2,7 +2,15 @@ const { ApolloServer, gql } = require("apollo-server");
 const { buildFederatedSchema } = require("@apollo/federation");
 
 const typeDefs = gql`
-  type Review @key(fields: "id") {
+  interface Node {
+    id: ID!
+  }
+
+  type Query {
+    node(id: ID!): Node
+  }
+
+  type Review implements Node @key(fields: "id") {
     id: ID!
     body: String
     author: User @provides(fields: "username")
@@ -23,6 +31,9 @@ const typeDefs = gql`
 
 const resolvers = {
   Review: {
+    __resolveReference(object) {
+      return reviews.find(review => review.id === object.id);
+    },
     author(review) {
       return { __typename: "User", id: review.authorID };
     }
@@ -60,31 +71,31 @@ server.listen({ port: 4002 }).then(({ url }) => {
 });
 
 const usernames = [
-  { id: "1", username: "@ada" },
-  { id: "2", username: "@complete" }
+  { id: "User:1", username: "@ada" },
+  { id: "User:2", username: "@complete" }
 ];
 const reviews = [
   {
-    id: "1",
-    authorID: "1",
+    id: "Review:1",
+    authorID: "User:1",
     product: { upc: "1" },
     body: "Love it!"
   },
   {
-    id: "2",
-    authorID: "1",
+    id: "Review:2",
+    authorID: "User:1",
     product: { upc: "2" },
     body: "Too expensive."
   },
   {
-    id: "3",
-    authorID: "2",
+    id: "Review:3",
+    authorID: "User:2",
     product: { upc: "3" },
     body: "Could be better."
   },
   {
-    id: "4",
-    authorID: "2",
+    id: "Review:4",
+    authorID: "User:2",
     product: { upc: "1" },
     body: "Prefer something else."
   }
